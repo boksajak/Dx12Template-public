@@ -1,0 +1,8 @@
+find_path(TINY_OBJ_LODAER_INCLUDE_DIR "tiny_obj_loader.h")
+
+set(TINY_OBJ_LODAER_INCLUDE_DIRS ${TINY_OBJ_LODAER_INCLUDE_DIR})
+
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(TINYOBJ DEFAULT_MSG TINY_OBJ_LODAER_INCLUDE_DIR)
+
+mark_as_advanced(TINY_OBJ_LODAER_INCLUDE_DIR)

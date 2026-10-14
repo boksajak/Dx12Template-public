@@ -1,0 +1,6 @@
+/vsbuild
+/src/assets/*
+!/src/assets/CMakeLists.txt
+!/src/assets/cornell_box/
+imgui.ini
+source.zip
