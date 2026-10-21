@@ -1,4 +1,5 @@
 /vsbuild
+/out
 /src/assets/*
 !/src/assets/CMakeLists.txt
 !/src/assets/cornell_box/

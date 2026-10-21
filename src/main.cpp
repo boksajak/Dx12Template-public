@@ -10,6 +10,12 @@
 #include "DxcShaderCompiler.h"
 #include "shaders/shared.h"
 
+#include "imgui.h"
+#include "imgui_impl_win32.h"
+#include "imgui_impl_dx12.h"
+
+IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
 #include <cstdlib>
 #include <filesystem>
 
@@ -625,12 +631,9 @@ private:
 
 	void makeSceneList()
 	{
-		// Grab assets folder next to .exe
-		std::filesystem::path assetsFolder = std::filesystem::path(utils::getExePath()) / L"assets";
+		// Grab assets folder next to .exe. For development, fallback to hardcoded assets folder inside project sources
+		std::filesystem::path assetsFolder = utils::resolveContentFolder(L"assets", ASSETS_DIR);
 		std::error_code error;
-
-		// For development, fallback to hardcoded assets folder inside project sources
-		if (!std::filesystem::is_directory(assetsFolder, error)) assetsFolder = std::filesystem::path(ASSETS_DIR);
 
 		// Clear the state
 		mSceneFiles.clear();
@@ -1226,7 +1229,7 @@ private:
 
 		resetAccumulation();
 
-		const std::wstring shaderFolder = utils::getExePath() + L"shaders\\";
+		const std::wstring shaderFolder = utils::resolveContentFolder(L"shaders", SHADERS_DIR);
 
 		std::vector<std::wstring> compilerFlags;
 
@@ -1382,7 +1385,7 @@ private:
 			mResourceUploader.UploadTexture(image.data(), mSceneImages[imageIndex]);
 			
 			// Release the image after upload
-			image.pixels.reset();
+			image.texels.reset();
 
 			// Transition texture for reading
 			transitionBarrier(mSceneImages[imageIndex], D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
@@ -2248,7 +2251,7 @@ void readCmdLineArguments(Dx12Template* dx12Template, LPWSTR lpCmdLine)
 	// Initialize defaults
 	int width = 1920;
 	int height = 1080;
-	const std::wstring assetsFolder = utils::getExePath() + L"assets\\";
+	const std::wstring assetsFolder = utils::resolveContentFolder(L"assets", ASSETS_DIR);
 	std::wstring sceneFile = L"";
 
 	// Start with the Cornell box when available; command-line arguments can override it.

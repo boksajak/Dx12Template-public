@@ -4,6 +4,10 @@
 	#define NOMINMAX
 #endif
 
+#ifndef WIN32_LEAN_AND_MEAN
+	#define WIN32_LEAN_AND_MEAN
+#endif
+
 #include <Windows.h>
 
 // Common includes
@@ -35,16 +39,6 @@
 
 // DX Compiler includes
 #include "dxcapi.h"
-
-// ImGUI libarry
-#include "imgui.h"
-#include "imgui_impl_win32.h"
-#include "imgui_impl_dx12.h"
-
-// STB library
-#include "stb_image.h"
-
-IMGUI_IMPL_API LRESULT  ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 // Dx12 helpers
 #define SAFE_RELEASE( x ) { if ( x ) { x->Release(); x = NULL; } }

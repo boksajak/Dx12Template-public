@@ -1,5 +1,5 @@
-cmake_minimum_required (VERSION 3.10)
-project (Dx12Template)
+cmake_minimum_required (VERSION 3.21)
+project (Dx12Template LANGUAGES CXX)
 
 # Include macros
 include(${CMAKE_SOURCE_DIR}/../cmake/macros.cmake)
@@ -31,6 +31,7 @@ set(INCS
     LightsExtractor.h
     common.h
     scene.h
+    TinyGLTF.h
     shaders/brdf.h
     shaders/shared.h
     thirdparty/tinygltf/tiny_gltf.h
@@ -54,6 +55,9 @@ set(CPPS
     ComputePass.cpp
     main.cpp
     scene.cpp
+    STB.cpp
+    TinyGLTF.cpp
+    TinyObjLoader.cpp
     utils.cpp)
 
 set(SHADERS
@@ -109,11 +113,23 @@ set(CMAKE_CONFIGURATION_TYPES Debug Release)
 
 add_executable(Dx12Template WIN32 ${CPPS} ${INCS})
 
+# Compile source files in parallel.
+if(MSVC)
+    target_compile_options(Dx12Template PRIVATE /MP)
+endif()
+
+# Precompile headers shared by the renderer source files.
+target_precompile_headers(Dx12Template PRIVATE common.h)
+
+# ImGui compiles directly into the executable without the renderer's PCH.
+set_source_files_properties(${ImGui_SOURCES} PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
+
 # Make this C++17 project
 target_compile_features(Dx12Template PRIVATE cxx_std_17)
 
-# Hardcoded assets folder used for development in case proper one is not present
+# Hardcoded assets and shaders folders used for development in case proper one is not present
 target_compile_definitions(Dx12Template PRIVATE ASSETS_DIR="${PROJECT_SOURCE_DIR}/assets")
+target_compile_definitions(Dx12Template PRIVATE SHADERS_DIR="${PROJECT_SOURCE_DIR}/shaders")
 
 # Set default VS project 
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT Dx12Template)
@@ -121,18 +137,7 @@ set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT D
 # Add custom target to include shaders in Visual Studio project (SOURCE_GROUP only works when source files are actually used in some target)
 add_custom_target(shaders SOURCES ${SHADERS})
 
-target_link_libraries(Dx12Template
-    PUBLIC ImGui::ImGui
-    PRIVATE ImGui::Sources ${DXC_LIBRARY})
-    
-# Set target directory for copying. Can refer to target which hasn't been added yet.
-set(COPY_TARGET_DIR $<TARGET_FILE_DIR:Dx12Template>)
-post_build_make_dir_link(Dx12Template ${PROJECT_SOURCE_DIR}/shaders  ${COPY_TARGET_DIR}/shaders)
-post_build_make_dir_link(Dx12Template ${PROJECT_SOURCE_DIR}/assets  ${COPY_TARGET_DIR}/assets)
-if(MSVC)
-    post_build_make_dir_link(Dx12Template ${PROJECT_SOURCE_DIR}/shaders  ${PROJECT_BINARY_DIR}/shaders)
-    post_build_make_dir_link(Dx12Template ${PROJECT_SOURCE_DIR}/assets  ${PROJECT_BINARY_DIR}/assets)
-endif(MSVC)
+target_link_libraries(Dx12Template PRIVATE ImGui::Sources ${DXC_LIBRARY})
 
 # Copy dlls to target dir
 add_custom_command(TARGET Dx12Template POST_BUILD

@@ -4,14 +4,14 @@ Empty Dx12 project with path tracer.
 
 ## Build Instructions
 
-For the first build, it's recommended to **run the Visual Studio as an Administrator**. Build process will create symbolic links to folder with shaders, which can fail on some systems if VS is run without administrator rights.
-
 * Run `cmake` on the *src* subfolder and build the generated project
 * Or run provided file `win_cmake_create_vs_project.bat` and build the project generated in the *vsbuild* subfolder
 
+The application will look for assets and shaders in their respective folders next to executable. If not found, it will look inside development sources under *src* folder. This makes sure that for development you only need ony copy of shaders, inside the src folder.
+
 ### Troubleshooting
 
-If you get an error *Error: failed to get shader blob result!*, it most likely means that build didn't create a symbolic link for shaders folder in the build directory and executable can't find shader files. To fix this, run Visual Studio as administrator, clean the solution and run the build again.
+If you get an error *Error: failed to get shader blob result!*, the executable could not find shader files. Check whether shaders folder is present next to executable, or inside development sources.
 
 ## 3rd Party Software
 

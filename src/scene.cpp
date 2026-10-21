@@ -2,14 +2,9 @@
 #include "LightsExtractor.h"
 #include "utils.h"
 
-#define TINYOBJLOADER_IMPLEMENTATION
+#include "stb_image.h"
 #include "tiny_obj_loader.h"
-
-#define TINYGLTF_IMPLEMENTATION
-#define TINYGLTF_NO_STB_IMAGE
-#define TINYGLTF_NO_EXTERNAL_IMAGE
-#define TINYGLTF_NO_STB_IMAGE_WRITE
-#include "thirdparty/tinygltf/tiny_gltf.h"
+#include "TinyGLTF.h"
 
 #include <cmath>
 #include <cstdint>
@@ -22,6 +17,11 @@
 #include <atomic>
 #include <future>
 #include <thread>
+
+void Scene::Image::TexelDataDeleter::operator()(unsigned char* texels) const noexcept
+{
+    stbi_image_free(texels);
+}
 
 namespace texture_helpers
 {
@@ -93,7 +93,7 @@ namespace texture_helpers
         }
         else if (!image.uri.empty())
         {
-            const std::wstring name = utils::stringToWstring(tinygltf::dlib::urldecode(image.uri));
+            const std::wstring name = utils::stringToWstring(tinygltf_helpers::decodeUri(image.uri));
             if (name.empty()) return false;
             
             const bool absolute = name[0] == L'/' || name[0] == L'\\' || (name.size() > 1 && name[1] == L':');
@@ -133,11 +133,11 @@ namespace texture_helpers
         {
             // Load image using STB lib. Require 4 bytes per pixel
             rewind(file);
-            image.pixels.reset(stbi_load_from_file(file, &image.width, &image.height, &channels, 4));
+            image.texels.reset(stbi_load_from_file(file, &image.width, &image.height, &channels, 4));
         }
 
         fclose(file);
-        return image.pixels != nullptr;
+        return image.texels != nullptr;
     }
 
     bool loadImageMemory(const unsigned char* bytes, size_t size, Scene::Image& image)
@@ -145,8 +145,8 @@ namespace texture_helpers
         if (!size || size > size_t(std::numeric_limits<int>::max())) return false;
         int channels = 0;
         if (!stbi_info_from_memory(bytes, int(size), &image.width, &image.height, &channels) || !validImageSize(image.width, image.height)) return false;
-        image.pixels.reset(stbi_load_from_memory(bytes, int(size), &image.width, &image.height, &channels, 4));
-        return image.pixels != nullptr;
+        image.texels.reset(stbi_load_from_memory(bytes, int(size), &image.width, &image.height, &channels, 4));
+        return image.texels != nullptr;
     }
 
     // Returns the GLTF texture index if the texture is supported, or -1 if it is not supported.
@@ -1172,7 +1172,7 @@ HRESULT Scene::LoadGLTF(std::wstring filePath)
                 Image& image = decodedImages[i];
 
                 // Fail if we could not load the image
-                if (!image.pixels)
+                if (!image.texels)
                 {
                     utils::printMessage("Could not load glTF image: " + (source.imagePath.empty() ? std::to_string(i) : utils::wstringToString(source.imagePath)) + "\n");
                     continue;
