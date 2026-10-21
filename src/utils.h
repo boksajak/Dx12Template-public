@@ -7,6 +7,9 @@ namespace utils {
 	void validate(HRESULT hr, LPCSTR msg);
 	void printMessage(const std::string& message);
 
+	// Helper to locate assets and shaders (either next to .exe or fallback inside sources for development)
+	std::wstring resolveContentFolder(const std::wstring& folder, const char* fallback);
+
 	std::wstring extractExtension(std::wstring filePath);
 	bool hasExtension(const std::wstring& filePath, const std::wstring& extension);
 	bool hasExtension(const std::wstring& filePath, const std::wstring& extensionA, const std::wstring& extensionB);

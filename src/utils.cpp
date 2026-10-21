@@ -3,10 +3,7 @@
 #include <locale>
 #include <codecvt>
 #include <cwctype>
-
-// STB library implementation
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+#include <filesystem>
 
 void utils::validate(HRESULT hr, LPCWSTR msg)
 {
@@ -29,6 +26,26 @@ void utils::validate(HRESULT hr, LPCSTR msg)
 void utils::printMessage(const std::string& message)
 {
 	OutputDebugStringA(message.c_str());
+}
+
+std::wstring utils::resolveContentFolder(const std::wstring& folder, const char* fallback)
+{
+	std::error_code err;
+
+	// First try next to .exe
+	const std::filesystem::path path = std::filesystem::path(getExePath()) / folder;
+	if (std::filesystem::is_directory(path, err)) return path.wstring() + L"\\";
+
+	// Go to fallback in the source directory for development
+	if (fallback != nullptr && *fallback != '\0')
+	{
+		std::filesystem::path fallbackPath(fallback);
+		err.clear();
+		if (std::filesystem::is_directory(fallbackPath, err)) return fallbackPath.make_preferred().wstring() + L"\\";
+	}
+
+	// No folder exists, return the one next to .exe
+	return path.wstring() + L"\\";
 }
 
 std::wstring utils::extractExtension(std::wstring filePath)

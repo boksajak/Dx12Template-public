@@ -1,5 +1,6 @@
 #include "common.h"
 #include <memory>
+#include <cfloat>
 #include "shaders/shared.h"
 #include "shaders/brdf.h"
 
@@ -23,16 +24,20 @@ public:
         int width = 0;
         int height = 0;
 
-        std::unique_ptr<unsigned char, decltype(&stbi_image_free)> pixels{ nullptr, stbi_image_free };
+        struct TexelDataDeleter
+        {
+            void operator()(unsigned char* texels) const noexcept;
+        };
+        std::unique_ptr<unsigned char, TexelDataDeleter> texels;
 
         const unsigned char* data() const 
         { 
-            return pixels.get(); 
+            return texels.get();
         }
         
         size_t size() const 
         { 
-            return pixels ? (size_t(width) * size_t(height) * 4) : 0; 
+            return texels ? (size_t(width) * size_t(height) * 4) : 0;
         }
     };
 
