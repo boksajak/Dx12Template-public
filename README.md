@@ -13,6 +13,16 @@ The application will look for assets and shaders in their respective folders nex
 
 If you get an error *Error: failed to get shader blob result!*, the executable could not find shader files. Check whether shaders folder is present next to executable, or inside development sources.
 
+## Scripts
+
+| Script | Purpose |
+| --- | --- |
+| `win_cmake_create_vs_project.bat` | Generate the Visual Studio 2022 x64 project in `vsbuild`. |
+| `win_cmake_build.bat` | Build Release in an already configured `vsbuild` directory. |
+| `win_run.bat` | Configure, build Release, and run the executable from `vsbuild`. |
+| `win_cmake_deploy.bat` | Configure, build Release, and install the executable, DXC DLLs, shaders, Cornell box, and license into `install`. |
+| `package_source.bat` | Create a source ZIP, excluding SDK dependencies, assets, and build output.
+
 ## 3rd Party Software
 
 This project uses following dependencies:

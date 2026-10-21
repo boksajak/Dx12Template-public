@@ -1,4 +1,5 @@
 /vsbuild
+/install
 /out
 /src/assets/*
 !/src/assets/CMakeLists.txt

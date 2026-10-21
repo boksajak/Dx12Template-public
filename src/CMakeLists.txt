@@ -20,13 +20,7 @@ print_list_contents("SDK Subdirectories:" SDK_SUBDIRS_CONCAT)
 
 # Additional places where to look for libraries - all our SDK folders
 set(CMAKE_PREFIX_PATH ${SDK_SUBDIRS_CONCAT} CACHE PATH "Paths to dependencies")
- 
- # Add project subdirs
-SUBDIRLIST(SUBDIRS ${CMAKE_CURRENT_SOURCE_DIR})                    
-FOREACH(subdir ${SUBDIRS})
-    ADD_SUBDIRECTORY(${subdir})
-ENDFOREACH()
-              
+               
 set(INCS
     LightsExtractor.h
     common.h
@@ -149,3 +143,10 @@ add_custom_command(TARGET Dx12Template POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different  
         "${DXC_DLL_DIR}/dxil.dll"    
         $<TARGET_FILE_DIR:Dx12Template>)
+
+# Install the executable and the content (shaders + cornell box)
+install(TARGETS Dx12Template RUNTIME DESTINATION .)
+install(FILES "${DXC_DLL_DIR}/dxcompiler.dll" "${DXC_DLL_DIR}/dxil.dll" DESTINATION .)
+install(DIRECTORY shaders DESTINATION . FILES_MATCHING PATTERN "*.hlsl" PATTERN "*.h")
+install(DIRECTORY assets/cornell_box DESTINATION assets)
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/../LICENSE" DESTINATION .)
